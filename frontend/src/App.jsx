@@ -8,9 +8,11 @@ import {
   FileText,
   Bell,
   UserCircle2,
+  LogOut,
 } from "lucide-react";
-import TimePicker from "react-time-picker";
 import "./App.css";
+import Login from "./login";
+import Register from "./register";
 
 const rooms = [
   "Ruang Meeting A",
@@ -108,6 +110,12 @@ function getMonthMatrix(currentMonth) {
 }
 
 function App() {
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  const [authMode, setAuthMode] = useState("login");
   const [bookings, setBookings] = useState(seedBookings);
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 5, 1));
   const [selectedDate, setSelectedDate] = useState(new Date(2026, 5, 12));
@@ -216,6 +224,30 @@ function App() {
     return "rejected";
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    setAuthMode("login");
+  };
+
+  if (!user) {
+    if (authMode === "register") {
+      return (
+        <Register
+          onRegisterSuccess={setUser}
+          onSwitchToLogin={() => setAuthMode("login")}
+        />
+      );
+    }
+
+    return (
+      <Login
+        onLoginSuccess={setUser}
+        onSwitchToRegister={() => setAuthMode("register")}
+      />
+    );
+  }
+
   return (
     <div className="app">
       <div className="container">
@@ -229,8 +261,13 @@ function App() {
             <Bell size={20} />
             <div className="user-box">
               <UserCircle2 size={24} />
-              <span>Daffa</span>
+              <span>{user?.nama || user?.name || user?.email || "User"}</span>
             </div>
+
+            <button type="button" className="logout-btn" onClick={handleLogout}>
+              <LogOut size={18} />
+              Logout
+            </button>
           </div>
         </div>
 
